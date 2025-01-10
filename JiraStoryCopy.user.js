@@ -4,6 +4,7 @@
 // @description	Copy story IDs from Jira tickets
 // @author		MikeG
 // @match		https://*.atlassian.net/*
+// @downloadURL	https://github.com/M-Garrett/MG-Browser-Scripts/raw/main/JiraStoryCopy.user.js
 // @grant		GM_setClipboard
 // ==/UserScript==
 
