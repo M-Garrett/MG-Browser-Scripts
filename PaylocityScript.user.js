@@ -180,6 +180,8 @@ function buildTable() {
 		}
 	})
 
+	let totalDaysAvailable = 0
+
 	// Update table contents
 	PTOtypes.forEach(pto => {
 		const link = querySelectorAllWithText(newTable, 'a', pto.name.toLocaleUpperCase())
@@ -228,6 +230,11 @@ function buildTable() {
 			cellMap.unused.days = totalDays - cellMap.used.days
 		}
 
+		// Add up all days available (except sick days)
+		if (!cells[columnMap.type.index].querySelector('b')?.textContent.toLowerCase().indexOf('sick')) {
+			totalDaysAvailable += cellMap.available.days
+		}
+
 		// Update the values to days instead of hours
 		for (const value of Object.values(cellMap)) {
 			value.elm.textContent = `${value.days} Day${value.days === 1 ? '' : 's'}`
@@ -236,6 +243,9 @@ function buildTable() {
 			}
 		}
 	})
+
+	// Show total time available in the card header
+	originalTable.closest('.card').querySelector('h2').innerHTML = `Time Off: <span style="color:#fc2621;">${totalDaysAvailable} days</span> available`
 
 	return newTable
 }
