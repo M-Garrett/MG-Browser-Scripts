@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		Paylocity PTO helper
-// @version		2.4
+// @version		2.5
 // @description	Make Paylocity easier to read
 // @author		Mike Garrett
 // @match		https://*.paylocity.com/*/employeeselfservice/*
@@ -230,7 +230,6 @@ function buildTable() {
 		// Update the values to days instead of hours
 		for (const value of Object.values(cellMap)) {
 			value.elm.textContent = `${value.days} Day${value.days === 1 ? '' : 's'}`
-			// value.elm.setAttribute('title', value.originalHoursText)
 			if (value.hidden) {
 				value.elm.classList.add('hiddenColumn')
 			}
