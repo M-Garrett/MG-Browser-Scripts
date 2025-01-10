@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		Paylocity PTO helper
-// @version		2.3
+// @version		2.4
 // @description	Make Paylocity easier to read
 // @author		Mike Garrett
 // @match		https://*.paylocity.com/*/employeeselfservice/*
@@ -60,7 +60,7 @@ const id = {
 
 // All PTO types
 const PTOtypes = [
-	// TODO: Figure out the expiry date for all types that have one
+	// TODO: Add any missing expiry dates
 	{ name: 'BRVMT - Bereavement' },
 	{ name: 'CSFPH - SanFran PHE Leave' },
 	{ name: 'FLY - Flyer Holiday', expires: 'December 31st' },
@@ -75,13 +75,13 @@ const PTOtypes = [
 	{ name: 'OSHVX - OSHA Vaccine Mandated PTO' },
 	{ name: 'PB - Parental Bonding' },
 	{ name: 'PERS - Personal Days', expires: 'December 31st' },
-	{ name: 'PTOCA - Paid Time Off CA', expires: 'December 31st' },
-	{ name: 'PTOCD - PTO Canada', expires: '?' },
-	{ name: 'PTODE - PTO DE', expires: '?' },
+	{ name: 'PTOCA - Paid Time Off CA', expires: 'December 31st', primaryBucket: true },
+	{ name: 'PTOCD - PTO Canada', expires: '?', primaryBucket: true },
+	{ name: 'PTODE - PTO DE', expires: '?', primaryBucket: true },
 	{ name: 'PTOR - Rollover PTO', expires: 'March 31st' },
 	{ name: 'PTOU - Unpaid Time Off', expires: '?' },
-	{ name: 'PTOUK - Paid Time Off UK', expires: 'December 31st' },
-	{ name: 'PTOUS - Paid Time Off US', expires: 'December 31st' },
+	{ name: 'PTOUK - Paid Time Off UK', expires: 'December 31st', primaryBucket: true },
+	{ name: 'PTOUS - Paid Time Off US', expires: 'December 31st', primaryBucket: true },
 	{ name: 'SB - Sabbatical' },
 	{ name: 'SICK - SICK TIME OFF' },
 	{ name: 'STD - Short Term Disability' },
@@ -94,7 +94,7 @@ waitForElement(loadedSelector).then(async () => {
 	injectElements()
 
 	// If this is the first time running the script, automatically prompt the users to complete the config
-	const settings = await GM.getValues([ 'totalDays' ])
+	const settings = await GM.getValues(['totalDays'])
 	if (!settings.totalDays) {
 		onToggleSettings()
 	}
@@ -117,6 +117,10 @@ function injectElements() {
 	// Useful links under the table
 	const originalHistoryLink = querySelectorAllWithText(document, 'a', 'Time Off Request History')
 	const historyLink = originalHistoryLink.cloneNode(true)
+	// Simplify the link and strip out chiled buttons
+	for (let i = 0; i < historyLink.childNodes.length; i++) {
+		if (historyLink.childNodes[i].nodeType !== 3) historyLink.removeChild(historyLink.childNodes[i--])
+	}
 	document.getElementById(id.targetLinks).append(historyLink)
 
 	// One listener to rule them all
@@ -216,14 +220,16 @@ function buildTable() {
 			},
 		}
 
-		// TODO: Once we revert to accruing time monthly, handle that here. Something along the lines of:
-		// cellMap.available.days = totalDays - cellMap.used.days - cellMap.planned.days
-		// cellMap.unused.days = totalDays - cellMap.used.days
+		// Show the correct available days, monthly accrual shouldn't be user-facing...
+		if (pto.primaryBucket) {
+			cellMap.available.days = totalDays - cellMap.used.days - cellMap.planned.days
+			cellMap.unused.days = totalDays - cellMap.used.days
+		}
 
-		// Update the text to days
+		// Update the values to days instead of hours
 		for (const value of Object.values(cellMap)) {
 			value.elm.textContent = `${value.days} Day${value.days === 1 ? '' : 's'}`
-			value.elm.setAttribute('title', value.originalHoursText)
+			// value.elm.setAttribute('title', value.originalHoursText)
 			if (value.hidden) {
 				value.elm.classList.add('hiddenColumn')
 			}
@@ -251,7 +257,7 @@ async function onSettingsChange() {
 	const newHoursPerHalfDay = parseInt(document.getElementById(id.settingsHalfInput)?.value)
 	if (newTotalDays && newHoursPerHalfDay) {
 		await GM.setValues({ totalDays: newTotalDays, halfDay: newHoursPerHalfDay })
-		// This is a bit nasty, but as this is intended as a set and forget, I'm not going to put effort into updating the table automatically
+		// This is a bit nasty, but as this is intended as a set and forget, so I'm not going to put effort into updating the table automatically
 		location.reload()
 	}
 }
@@ -290,7 +296,7 @@ function querySelectorAllWithText(parent, selector, text) {
 function removeInlineStyles(elm) {
 	elm.removeAttribute('style')
 	for (let child in elm.childNodes) {
-		if (elm.childNodes[child].nodeType == 1) {
+		if (elm.childNodes[child].nodeType === 1) {
 			removeInlineStyles(elm.childNodes[child])
 		}
 	}
@@ -418,11 +424,11 @@ const modalHtml = `
 			<h3>Paylocity helper config</h3>
 			<label>
 				Total days:
-				<input type="text" id="${id.settingsTotalInput}" value="${ totalDays || 25 }" />
+				<input type="text" id="${id.settingsTotalInput}" value="${totalDays || 25}" />
 			</label>
 			<label>
 				Hours per half-day:
-				<input type="text" id="${id.settingsHalfInput}" value="${ halfDay || 4 }" />
+				<input type="text" id="${id.settingsHalfInput}" value="${halfDay || 4}" />
 			</label>
 			<button
 				type="button"
@@ -444,6 +450,6 @@ const buttonHtml = `
 		class="button small citrus-button"
 		id="${id.primaryBtn}"
 	>
-		Expanded View
+		Easy View
 	</button>
 `
