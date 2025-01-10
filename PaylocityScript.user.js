@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		Paylocity PTO helper
-// @version		2.5
+// @version		2.6
 // @description	Make Paylocity easier to read
 // @author		Mike Garrett
 // @match		https://*.paylocity.com/*/employeeselfservice/*
