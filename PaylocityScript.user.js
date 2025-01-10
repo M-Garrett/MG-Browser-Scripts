@@ -4,6 +4,7 @@
 // @description	Make Paylocity easier to read
 // @author		Mike Garrett
 // @match		https://*.paylocity.com/*/employeeselfservice/*
+// @updateURL	https://github.com/M-Garrett/MG-Browser-Scripts/raw/main/PaylocityScript.user.js
 // @downloadURL	https://github.com/M-Garrett/MG-Browser-Scripts/raw/main/PaylocityScript.user.js
 // @grant		GM_addStyle
 // @grant		GM.setValue
