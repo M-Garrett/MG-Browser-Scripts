@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		Copy Jira story ID
-// @version		2.1
+// @version		2.3
 // @description	Copy story IDs from Jira tickets
 // @author		MikeG
 // @match		https://*.atlassian.net/*
@@ -9,7 +9,9 @@
 // @grant		GM_setClipboard
 // ==/UserScript==
 
+// ---- Include your prefix here ----
 const prefix = 'mgarrett/'
+// ----------------------------------
 
 document.addEventListener('click', e => {
 	const elm = e.target.closest('[data-testid="issue.views.issue-base.foundation.breadcrumbs.breadcrumb-current-issue-container"] a[href^="/browse/"]')
@@ -20,8 +22,9 @@ document.addEventListener('click', e => {
 		let title = document.querySelector('[data-testid="issue.views.issue-base.foundation.summary.heading"]').innerText.trim()
 		// Make the title git-safe
 		title = title.replace(/'/g, '') // Remove apostrophes instead of replacing with '-'
+        title = title.replace(/&/g, '-and-') // Replace & as they break various systems
 		title = title.replace(/\/\.|\.lock$|^\.|\.\.|\.| |~|'|`|\^|:|\?|\*|\(|\)|\[|^\/|\/$|\/\/|\.$|@{|^@$|\\|^-|-$/g, '-')
-		// Clean up multiple dashes in a row
+		// Clean up consecutive dashes
 		title = title.replace(/\-{2,}/g, '-')
 		GM_setClipboard(`${prefix}${ticketId}-${title}`)
 	} else {
@@ -30,3 +33,4 @@ document.addEventListener('click', e => {
 	e.preventDefault()
 	e.stopPropagation()
 })
+
